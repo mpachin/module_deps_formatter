@@ -4,24 +4,43 @@ defmodule AliasFormatterTest do
   alias AliasFormatter
 
   test "should sort aliases alphanumerically" do
-    test_module_str =
-      String.trim("""
-      defmodule TestModuleExample do
-        alias TestModuleExample.Ccc
-        alias TestModuleExample.Bbb
-        alias TestModuleExample.Aaa
-      end
-      """)
+    test_cases = [
+      {
+        """
+        defmodule TestModuleExample do
+          alias TestModuleExample.Ccc
+          alias TestModuleExample.Bbb
+          alias TestModuleExample.Aaa
+        end
+        """,
+        """
+        defmodule TestModuleExample do
+          alias TestModuleExample.Aaa
+          alias TestModuleExample.Bbb
+          alias TestModuleExample.Ccc
+        end
+        """
+      },
+      {
+        """
+        defmodule TestModuleExample do
+          alias C_TestModuleExample.Aaa.Ccc
+          alias B_TestModuleExample.Bbb.Bbb
+          alias A_TestModuleExample.Ccc.Aaa
+        end
+        """,
+        """
+        defmodule TestModuleExample do
+          alias A_TestModuleExample.Ccc.Aaa
+          alias B_TestModuleExample.Bbb.Bbb
+          alias C_TestModuleExample.Aaa.Ccc
+        end
+        """
+      }
+    ]
 
-    expected_result_str =
-      String.trim("""
-      defmodule TestModuleExample do
-        alias TestModuleExample.Aaa
-        alias TestModuleExample.Bbb
-        alias TestModuleExample.Ccc
-      end
-      """)
-
-    assert expected_result_str == test_module_str |> AliasFormatter.format([])
+    for {test_input, expected_result} <- test_cases do
+      assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    end
   end
 end
