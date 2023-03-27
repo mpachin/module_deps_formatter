@@ -3,7 +3,7 @@ defmodule AliasFormatter.DefmoduleSubstituteTest do
 
   alias AliasFormatter.DefmoduleSubstitute
 
-  @test_do_block_ast_list [
+  @do_block_ast_list_before_substitution [
     {:def, [line: 2],
      [
        {:first, [line: 2], nil},
@@ -11,10 +11,16 @@ defmodule AliasFormatter.DefmoduleSubstituteTest do
          {{:__block__, [line: 2], [:do]}, {:__block__, [line: 3], ["first"]}}
        ]
      ]},
-    {:alias, [line: 5],
+    {:alias, [line: 5], [{:__aliases__, [line: 5], [:C_TestModuleExample, :Aaa, :Ccc]}]}
+  ]
+
+  @do_block_ast_list_after_substitution [
+    {:def, [line: 2],
      [
-       {:__aliases__, [line: 5], [:C_TestModuleExample, :Aaa, :Ccc]}
-     ]}
+       {:first, [line: 2], nil},
+       [do: "first"]
+     ]},
+    {:alias, [line: 5], [{:__aliases__, [line: 5], [:C_TestModuleExample, :Aaa, :Ccc]}]}
   ]
 
   @ast_before_substitution {:defmodule, [line: 1],
@@ -23,7 +29,7 @@ defmodule AliasFormatter.DefmoduleSubstituteTest do
                               [
                                 {
                                   {:__block__, [line: 1], [:do]},
-                                  {:__block__, [], @test_do_block_ast_list}
+                                  {:__block__, [], @do_block_ast_list_before_substitution}
                                 }
                               ]
                             ]}
@@ -31,7 +37,7 @@ defmodule AliasFormatter.DefmoduleSubstituteTest do
   @expected_result_ast {:defmodule, [line: 1],
                         [
                           {:__aliases__, [line: 1], [:TestModuleExample]},
-                          [do: {:__block__, [], @test_do_block_ast_list}]
+                          [do: {:__block__, [], @do_block_ast_list_after_substitution}]
                         ]}
 
   describe "substitute/1" do
