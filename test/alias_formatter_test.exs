@@ -64,7 +64,10 @@ defmodule AliasFormatterTest do
       alias B_TestModuleExample.Bbb.Bbb
       alias C_TestModuleExample.Aaa.Ccc
 
-      def first, do: "first"
+      def first do
+        "first"
+      end
+
       def second, do: "second"
       def third, do: "third"
     end
