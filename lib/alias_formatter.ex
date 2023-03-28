@@ -48,8 +48,11 @@ defmodule AliasFormatter do
     |> Enum.sort(fn alias_ast_1, alias_ast_2 ->
       [alias_str_1, alias_str_2] =
         [alias_ast_1, alias_ast_2]
-        |> Enum.map(fn {_, _, alias_ast} -> alias_ast end)
-        |> Enum.map(fn [{_, _, alias_ast}] -> alias_ast end)
+        |> Enum.map(fn {_, _, alias_ast_list} ->
+          {_, _, alias_ast} = alias_ast_list |> List.first()
+
+          alias_ast
+        end)
         |> Enum.map(&Enum.join(&1, "."))
 
       alias_str_1 < alias_str_2
