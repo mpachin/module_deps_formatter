@@ -34,5 +34,22 @@ defmodule AliasFormatter.KeywordSubstituteTest do
 
       assert ^test_function_ast = test_function_ast |> KeywordSubstitute.substitute()
     end
+
+    test "shouldn't change alias asts" do
+      test_alias_asts = [
+        {:alias, [line: 3], [{:__aliases__, [line: 3], [:TestModuleExample, :Bbb]}]},
+        {:alias, [line: 3],
+         [
+           {:__aliases__, [line: 3], [:TestModuleExample, :Bbb]},
+           [
+             {{:__block__, [format: :keyword, line: 3], [:as]}, {:__aliases__, [line: 3], [:Aaa]}}
+           ]
+         ]}
+      ]
+
+      for test_alias_ast <- test_alias_asts do
+        assert ^test_alias_ast = test_alias_ast |> KeywordSubstitute.substitute()
+      end
+    end
   end
 end
