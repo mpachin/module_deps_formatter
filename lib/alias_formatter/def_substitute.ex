@@ -1,4 +1,4 @@
-defmodule AliasFormatter.KeywordSubstitute do
+defmodule AliasFormatter.DefSubstitute do
   def substitute(
         {
           :def,

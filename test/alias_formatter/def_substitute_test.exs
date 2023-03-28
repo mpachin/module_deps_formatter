@@ -1,7 +1,7 @@
-defmodule AliasFormatter.KeywordSubstituteTest do
+defmodule AliasFormatter.DefSubstituteTest do
   use ExUnit.Case
 
-  alias AliasFormatter.KeywordSubstitute
+  alias AliasFormatter.DefSubstitute
 
   describe "substitute/1" do
     test "should change function ast if format: :keyword option isn't presented" do
@@ -16,7 +16,7 @@ defmodule AliasFormatter.KeywordSubstituteTest do
                     }
                   ]
                 ]}
-               |> KeywordSubstitute.substitute()
+               |> DefSubstitute.substitute()
     end
 
     test "should keep function ast unchanged if format: :keyword is presented" do
@@ -32,7 +32,7 @@ defmodule AliasFormatter.KeywordSubstituteTest do
            ]
          ]}
 
-      assert ^test_function_ast = test_function_ast |> KeywordSubstitute.substitute()
+      assert ^test_function_ast = test_function_ast |> DefSubstitute.substitute()
     end
 
     test "shouldn't change alias asts" do
@@ -48,7 +48,7 @@ defmodule AliasFormatter.KeywordSubstituteTest do
       ]
 
       for test_alias_ast <- test_alias_asts do
-        assert ^test_alias_ast = test_alias_ast |> KeywordSubstitute.substitute()
+        assert ^test_alias_ast = test_alias_ast |> DefSubstitute.substitute()
       end
     end
   end
