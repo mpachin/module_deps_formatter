@@ -95,4 +95,22 @@ defmodule AliasFormatterTest do
 
     assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
   end
+
+  test "should substitute short form aliases with full form aliases" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.{Ccc, Aaa, Bbb}
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa
+      alias TestModuleExample.Bbb
+      alias TestModuleExample.Ccc
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
 end
