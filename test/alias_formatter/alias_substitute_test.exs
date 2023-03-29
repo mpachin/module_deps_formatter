@@ -12,26 +12,32 @@ defmodule AliasFormatter.AliasSubstituteTest do
              ] =
                {:alias, [line: 2],
                 [
-                  {
-                    {
-                      :.,
-                      [line: 2],
-                      [
-                        {
-                          :__aliases__,
-                          [line: 2],
-                          [:TestModuleExample]
-                        },
-                        :{}
-                      ]
-                    },
-                    [line: 2],
-                    [
-                      {:__aliases__, [line: 2], [:Ccc]},
-                      {:__aliases__, [line: 2], [:Aaa]},
-                      {:__aliases__, [line: 2], [:Bbb]}
-                    ]
-                  }
+                  {{:., [line: 2], [{:__aliases__, [line: 2], [:TestModuleExample]}, :{}]},
+                   [line: 2],
+                   [
+                     {:__aliases__, [line: 2], [:Ccc]},
+                     {:__aliases__, [line: 2], [:Aaa]},
+                     {:__aliases__, [line: 2], [:Bbb]}
+                   ]}
+                ]}
+               |> AliasSubstitute.substitute()
+    end
+
+    test "should correctly change alias ast with complex nesting" do
+      assert [
+               {:__aliases__, [line: 2], [:TestModuleExample, :Nested, :One, :Ccc]},
+               {:__aliases__, [line: 2], [:TestModuleExample, :Nested, :Two, :Aaa]},
+               {:__aliases__, [line: 2], [:TestModuleExample, :Nested, :Three, :Bbb]}
+             ] =
+               {:alias, [line: 2],
+                [
+                  {{:., [line: 2],
+                    [{:__aliases__, [line: 2], [:TestModuleExample, :Nested]}, :{}]}, [line: 2],
+                   [
+                     {:__aliases__, [line: 2], [:One, :Ccc]},
+                     {:__aliases__, [line: 2], [:Two, :Aaa]},
+                     {:__aliases__, [line: 2], [:Three, :Bbb]}
+                   ]}
                 ]}
                |> AliasSubstitute.substitute()
     end
