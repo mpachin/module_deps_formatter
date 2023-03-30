@@ -3,6 +3,7 @@ defmodule AliasFormatter do
   Documentation for `AliasFormatter`.
   """
 
+  alias AliasFormatter.AliasDeduplicate
   alias AliasFormatter.DefmoduleSubstitute
 
   @behaviour Mix.Tasks.Format
@@ -27,6 +28,7 @@ defmodule AliasFormatter do
       |> split_aliases()
       |> then(fn {aliases_ast_list, rest_ast_list} ->
         aliases_ast_list
+        |> AliasDeduplicate.deduplicate()
         |> sort_aliases_ast_list()
         |> Enum.concat(rest_ast_list)
       end)
