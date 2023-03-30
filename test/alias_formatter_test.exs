@@ -95,4 +95,40 @@ defmodule AliasFormatterTest do
 
     assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
   end
+
+  test "should substitute short form aliases with full form aliases" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.{Ccc, Aaa, Bbb}
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa
+      alias TestModuleExample.Bbb
+      alias TestModuleExample.Ccc
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
+
+  test "should substitute short form aliases with full form aliases in complex nestings" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Nested.{Ccc.Ccc, Aaa.Aaa, Bbb.Bbb}
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Nested.Aaa.Aaa
+      alias TestModuleExample.Nested.Bbb.Bbb
+      alias TestModuleExample.Nested.Ccc.Ccc
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
 end
