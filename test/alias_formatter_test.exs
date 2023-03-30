@@ -131,4 +131,21 @@ defmodule AliasFormatterTest do
 
     assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
   end
+
+  test "should remove alias duplicates" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa
+      alias TestModuleExample.Aaa
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
 end
