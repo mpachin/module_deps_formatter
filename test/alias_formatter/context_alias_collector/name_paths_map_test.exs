@@ -3,7 +3,7 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
 
   alias AliasFormatter.ContextAliasCollector.NamePathsMap
 
-  test "should return short alias version" do
+  test "should update given map with alias data" do
     test_alias_data = {[:Test, :Module, :Aaa], :Aaa}
 
     assert %{
@@ -12,6 +12,6 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
                  Aaa: :Aaa
                }
              }
-           } = NamePathsMap.add_alias(test_alias_data)
+           } = NamePathsMap.add_alias(%{}, test_alias_data)
   end
 end
