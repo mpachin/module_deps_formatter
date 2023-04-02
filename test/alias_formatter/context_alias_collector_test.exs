@@ -14,7 +14,7 @@ defmodule AliasFormatter.ContextAliasCollectorTest do
       test_alias_data = {[:Test, :Module], :AsThis}
       ContextAliasCollector.add_alias_data(pid, test_alias_data)
 
-      assert [:Module] = ContextAliasCollector.get_short_name(pid, [:Test, :Module])
+      assert [:AsThis] = ContextAliasCollector.get_short_name(pid, [:Test, :Module])
     end
   end
 end
