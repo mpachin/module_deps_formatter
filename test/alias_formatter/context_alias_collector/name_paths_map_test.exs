@@ -64,5 +64,28 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa})
                |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa})
     end
+
+    test "should work correctly in border case collision" do
+      assert {%{
+                Test: %{
+                  Module: %{
+                    Aaa: :Aaa
+                  },
+                  Module_2: %{
+                    Aaa: :Aaa_2
+                  }
+                },
+                Test_2: %{
+                  Module: %{
+                    Aaa: :Aaa_3
+                  }
+                }
+              },
+              %{Aaa: 3}} =
+               {%{}, %{}}
+               |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
+               |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
+               |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa})
+    end
   end
 end
