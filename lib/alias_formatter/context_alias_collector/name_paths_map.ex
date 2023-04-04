@@ -5,7 +5,7 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
   end
 
   defp populate_state_with_alias([last_module_name], name_paths_map, alias_as, used_names) do
-    {updated_name, updated_used_names} = update_names(alias_as, used_names)
+    {updated_name, updated_used_names} = update_names(used_names, alias_as)
 
     name_paths_map
     |> Map.put(last_module_name, updated_name)
@@ -34,55 +34,76 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
     |> then(&{&1, updated_used_names})
   end
 
-  defp update_names(atom_name, used_names) do
-    if Map.has_key?(used_names, atom_name) do
-      {updated_name, updated_increment} =
-        used_names
-        |> Map.get(atom_name)
-        |> increment_postfix(atom_name)
-
-      {updated_name, Map.put(used_names, atom_name, updated_increment)}
-    else
-      {atom_name, Map.put(used_names, atom_name, 1)}
-    end
-  end
-
-  defp increment_postfix(increment, atom_name) do
+  defp update_names(used_names, atom_name) do
     atom_name
     |> Atom.to_string()
     |> String.split("_")
     |> case do
       [string_name] ->
-        updated_increment = increment + 1
-        {"#{string_name}_#{updated_increment}", updated_increment}
+        {string_name, 1}
 
       splitted_name_list ->
-        {postfix, rest_name_list} = List.pop_at(splitted_name_list, -1)
-
-        postfix
-        |> increment_str_postfix()
-        |> case do
-          {:ok, incremented_postfix} ->
-            {rest_name_list ++ [incremented_postfix], incremented_postfix}
-
-          {:error, new_postfix} ->
-            {splitted_name_list ++ [new_postfix], new_postfix}
-        end
-        |> then(fn {name_list, increment} ->
-          {Enum.join(name_list, "_"), increment}
-        end)
+        get_name_and_increment(splitted_name_list)
     end
-    |> then(fn {string_name, increment} ->
-      {String.to_atom(string_name), increment}
+    |> update_name_and_used_names(used_names)
+  end
+
+  defp get_name_and_increment(splitted_name_list) do
+    {postfix, rest_name_list} = List.pop_at(splitted_name_list, -1)
+
+    postfix
+    |> get_postfix_increment()
+    |> case do
+      {:ok, increment} ->
+        {rest_name_list, increment}
+
+      {:error, increment} ->
+        {splitted_name_list, increment}
+    end
+    |> then(fn {name_list, increment} ->
+      {Enum.join(name_list, "_"), increment}
     end)
   end
 
-  defp increment_str_postfix(postfix) do
+  defp get_postfix_increment(postfix) do
     try do
       int_postfix = String.to_integer(postfix)
-      {:ok, int_postfix + 1}
+      {:ok, int_postfix}
     rescue
       _ -> {:error, 2}
     end
+  end
+
+  defp update_name_and_used_names({string_name, postfix_increment}, used_names) do
+    atom_name = string_name |> String.to_atom()
+
+    used_names
+    |> Map.get(atom_name)
+    |> case do
+      nil ->
+        postfix_increment
+
+      current_increment ->
+        if current_increment >= postfix_increment do
+          current_increment + 1
+        else
+          postfix_increment
+        end
+    end
+    |> prepare_name_and_used_names(used_names, string_name, atom_name)
+  end
+
+  defp prepare_name_and_used_names(result_increment, used_names, string_name, atom_name) do
+    updated_used_names = used_names |> Map.put(atom_name, result_increment)
+
+    updated_name =
+      result_increment
+      |> case do
+        1 -> string_name
+        increment -> "#{string_name}_#{increment}"
+      end
+      |> String.to_atom()
+
+    {updated_name, updated_used_names}
   end
 end
