@@ -110,5 +110,24 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
                |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa_1})
     end
+
+    test "should ignore duplicate paths" do
+      assert {%{
+                Test: %{
+                  Module: %{
+                    Aaa: :Aaa_3
+                  },
+                  Module_2: %{
+                    Aaa: :Aaa_4
+                  }
+                }
+              },
+              %{Aaa: 4}} =
+               {%{}, %{}}
+               |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
+               |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
+               |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
+               |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
+    end
   end
 end

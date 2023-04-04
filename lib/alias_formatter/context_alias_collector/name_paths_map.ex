@@ -1,10 +1,26 @@
 defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
   def add_alias({%{} = name_paths_map, %{} = used_names}, {name_path, alias_as})
       when is_list(name_path) do
-    populate_state_with_alias(name_path, name_paths_map, alias_as, used_names)
+    if path_already_presented?(name_paths_map, name_path) do
+      {name_paths_map, used_names}
+    else
+      populate_map_with_alias(name_path, name_paths_map, alias_as, used_names)
+    end
   end
 
-  defp populate_state_with_alias([last_module_name], name_paths_map, alias_as, used_names) do
+  defp path_already_presented?(name_paths_map, name_path) do
+    name_paths_map
+    |> get_in(name_path)
+    |> case do
+      nil ->
+        false
+
+      _ ->
+        true
+    end
+  end
+
+  defp populate_map_with_alias([last_module_name], name_paths_map, alias_as, used_names) do
     {updated_name, updated_used_names} = update_names(used_names, alias_as)
 
     name_paths_map
@@ -12,7 +28,7 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
     |> then(&{&1, updated_used_names})
   end
 
-  defp populate_state_with_alias(
+  defp populate_map_with_alias(
          [atom_module_name | rest_atom_name_list],
          name_paths_map,
          alias_as,
@@ -27,7 +43,7 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
       end
 
     {updated_nested_paths_map, updated_used_names} =
-      populate_state_with_alias(rest_atom_name_list, nested_paths_map, alias_as, used_names)
+      populate_map_with_alias(rest_atom_name_list, nested_paths_map, alias_as, used_names)
 
     name_paths_map
     |> Map.put(atom_module_name, updated_nested_paths_map)
