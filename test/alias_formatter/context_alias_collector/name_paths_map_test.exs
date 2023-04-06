@@ -5,125 +5,160 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
 
   describe "add_alias/2" do
     test "should update given map with alias data" do
-      test_alias_data = {[:Test, :Module, :Aaa], :Aaa}
+      {alias_path, alias_as} = test_alias_data = {[:Test, :Module, :Aaa], :Aaa}
 
       assert {
                %{
                  Test: %{
                    Module: %{
-                     Aaa: :Aaa
+                     Aaa: ^alias_as
                    }
                  }
                },
-               %{Aaa: 1}
-             } = NamePathsMap.add_alias({%{}, %{}}, test_alias_data)
+               %{Aaa: 1},
+               %{Aaa: ^alias_path}
+             } = NamePathsMap.add_alias({%{}, %{}, %{}}, test_alias_data)
     end
 
     test "should preserve given map existing paths" do
-      assert {%{
-                Test: %{
-                  Module: %{
-                    Aaa: :Aaa
-                  },
-                  Module_2: %{
-                    Aaa: :Aaa_2
-                  }
-                },
-                Test_2: %{
-                  Module: %{
-                    Aaa: :Aaa_3
-                  }
-                }
-              },
-              %{Aaa: 3}} =
-               {%{}, %{}}
+      assert {
+               %{
+                 Test: %{
+                   Module: %{
+                     Aaa: :Aaa
+                   },
+                   Module_2: %{
+                     Aaa: :Aaa_2
+                   }
+                 },
+                 Test_2: %{
+                   Module: %{
+                     Aaa: :Aaa_3
+                   }
+                 }
+               },
+               %{Aaa: 3},
+               %{
+                 Aaa: [:Test, :Module, :Aaa],
+                 Aaa_2: [:Test, :Module_2, :Aaa],
+                 Aaa_3: [:Test_2, :Module, :Aaa]
+               }
+             } =
+               {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
                |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa_3})
     end
 
     test "should automatically postfix as: alias with increment if leaves collision found" do
-      assert {%{
-                Test: %{
-                  Module: %{
-                    Aaa: :Aaa
-                  },
-                  Module_2: %{
-                    Aaa: :Aaa_2
-                  }
-                },
-                Test_2: %{
-                  Module: %{
-                    Aaa: :Aaa_3
-                  }
-                }
-              },
-              %{Aaa: 3}} =
-               {%{}, %{}}
+      assert {
+               %{
+                 Test: %{
+                   Module: %{
+                     Aaa: :Aaa
+                   },
+                   Module_2: %{
+                     Aaa: :Aaa_2
+                   }
+                 },
+                 Test_2: %{
+                   Module: %{
+                     Aaa: :Aaa_3
+                   }
+                 }
+               },
+               %{Aaa: 3},
+               %{
+                 Aaa: [:Test, :Module, :Aaa],
+                 Aaa_2: [:Test, :Module_2, :Aaa],
+                 Aaa_3: [:Test_2, :Module, :Aaa]
+               }
+             } =
+               {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa})
                |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa})
     end
 
     test "should work correctly in border case collision" do
-      assert {%{
-                Test: %{
-                  Module: %{
-                    Aaa: :Aaa
-                  },
-                  Module_2: %{
-                    Aaa: :Aaa_2
-                  }
-                },
-                Test_2: %{
-                  Module: %{
-                    Aaa: :Aaa_3
-                  }
-                }
-              },
-              %{Aaa: 3}} =
-               {%{}, %{}}
+      assert {
+               %{
+                 Test: %{
+                   Module: %{
+                     Aaa: :Aaa
+                   },
+                   Module_2: %{
+                     Aaa: :Aaa_2
+                   }
+                 },
+                 Test_2: %{
+                   Module: %{
+                     Aaa: :Aaa_3
+                   }
+                 }
+               },
+               %{Aaa: 3},
+               %{
+                 Aaa: [:Test, :Module, :Aaa],
+                 Aaa_2: [:Test, :Module_2, :Aaa],
+                 Aaa_3: [:Test_2, :Module, :Aaa]
+               }
+             } =
+               {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
                |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa})
     end
 
     test "should base postfix on first input" do
-      assert {%{
-                Test: %{
-                  Module: %{
-                    Aaa: :Aaa_3
-                  },
-                  Module_2: %{
-                    Aaa: :Aaa_4
-                  }
-                },
-                Test_2: %{
-                  Module: %{
-                    Aaa: :Aaa_5
-                  }
-                }
-              },
-              %{Aaa: 5}} =
-               {%{}, %{}}
+      assert {
+               %{
+                 Test: %{
+                   Module: %{
+                     Aaa: :Aaa_3
+                   },
+                   Module_2: %{
+                     Aaa: :Aaa_4
+                   }
+                 },
+                 Test_2: %{
+                   Module: %{
+                     Aaa: :Aaa_5
+                   }
+                 }
+               },
+               %{Aaa: 5},
+               %{
+                 Aaa_3: [:Test, :Module, :Aaa],
+                 Aaa_4: [:Test, :Module_2, :Aaa],
+                 Aaa_5: [:Test_2, :Module, :Aaa]
+               }
+             } =
+               {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
                |> NamePathsMap.add_alias({[:Test_2, :Module, :Aaa], :Aaa_1})
     end
 
     test "should ignore duplicate paths" do
-      assert {%{
-                Test: %{
-                  Module: %{
-                    Aaa: :Aaa_3
-                  },
-                  Module_2: %{
-                    Aaa: :Aaa_4
-                  }
-                }
-              },
-              %{Aaa: 4}} =
-               {%{}, %{}}
+      assert {
+               %{
+                 Test: %{
+                   Module: %{
+                     Aaa: :Aaa_3
+                   },
+                   Module_2: %{
+                     Aaa: :Aaa_4
+                   }
+                 }
+               },
+               %{Aaa: 4},
+               %{
+                 Aaa_3: [:Test, :Module, :Aaa],
+                 Aaa_4: [:Test, :Module_2, :Aaa]
+               }
+             } =
+               {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})

@@ -1,15 +1,23 @@
 defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
-  def add_alias({%{} = name_paths_map, %{} = used_names}, {name_path, alias_as})
+  def add_alias(
+        {%{} = paths_to_leaf, %{} = leaf_to_increment, %{} = leaf_to_path} = state,
+        {name_path, alias_as}
+      )
       when is_list(name_path) do
-    if path_already_presented?(name_paths_map, name_path) do
-      {name_paths_map, used_names}
+    if path_already_presented?(paths_to_leaf, name_path) do
+      state
     else
-      populate_map_with_alias(name_path, name_paths_map, alias_as, used_names)
+      {updated_leaf, updated_paths_to_leaf, updated_leaf_to_increment} =
+        populate_map_with_alias(name_path, paths_to_leaf, alias_as, leaf_to_increment)
+
+      updated_leaf_to_path = leaf_to_path |> Map.put(updated_leaf, name_path)
+
+      {updated_paths_to_leaf, updated_leaf_to_increment, updated_leaf_to_path}
     end
   end
 
-  defp path_already_presented?(name_paths_map, name_path) do
-    name_paths_map
+  defp path_already_presented?(paths_to_leaf, name_path) do
+    paths_to_leaf
     |> get_in(name_path)
     |> case do
       nil ->
@@ -20,37 +28,37 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
     end
   end
 
-  defp populate_map_with_alias([last_module_name], name_paths_map, alias_as, used_names) do
-    {updated_name, updated_used_names} = update_names(used_names, alias_as)
+  defp populate_map_with_alias([last_module_name], paths_to_leaf, alias_as, leaf_to_increment) do
+    {updated_name, updated_leaf_to_increment} = update_names(leaf_to_increment, alias_as)
 
-    name_paths_map
+    paths_to_leaf
     |> Map.put(last_module_name, updated_name)
-    |> then(&{&1, updated_used_names})
+    |> then(&{updated_name, &1, updated_leaf_to_increment})
   end
 
   defp populate_map_with_alias(
          [atom_module_name | rest_atom_name_list],
-         name_paths_map,
+         paths_to_leaf,
          alias_as,
-         used_names
+         leaf_to_increment
        ) do
     nested_paths_map =
-      name_paths_map
+      paths_to_leaf
       |> Map.get(atom_module_name)
       |> case do
         nil -> %{}
         nested_state_map -> nested_state_map
       end
 
-    {updated_nested_paths_map, updated_used_names} =
-      populate_map_with_alias(rest_atom_name_list, nested_paths_map, alias_as, used_names)
+    {updated_name, updated_nested_paths_map, updated_leaf_to_increment} =
+      populate_map_with_alias(rest_atom_name_list, nested_paths_map, alias_as, leaf_to_increment)
 
-    name_paths_map
+    paths_to_leaf
     |> Map.put(atom_module_name, updated_nested_paths_map)
-    |> then(&{&1, updated_used_names})
+    |> then(&{updated_name, &1, updated_leaf_to_increment})
   end
 
-  defp update_names(used_names, atom_name) do
+  defp update_names(leaf_to_increment, atom_name) do
     atom_name
     |> Atom.to_string()
     |> String.split("_")
@@ -61,7 +69,7 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
       splitted_name_list ->
         get_name_and_increment(splitted_name_list)
     end
-    |> update_name_and_used_names(used_names)
+    |> update_name_and_leaf_to_increment(leaf_to_increment)
   end
 
   defp get_name_and_increment(splitted_name_list) do
@@ -90,10 +98,10 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
     end
   end
 
-  defp update_name_and_used_names({string_name, postfix_increment}, used_names) do
+  defp update_name_and_leaf_to_increment({string_name, postfix_increment}, leaf_to_increment) do
     atom_name = string_name |> String.to_atom()
 
-    used_names
+    leaf_to_increment
     |> Map.get(atom_name)
     |> case do
       nil ->
@@ -106,11 +114,16 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
           postfix_increment
         end
     end
-    |> prepare_name_and_used_names(used_names, string_name, atom_name)
+    |> prepare_name_and_leaf_to_increment(leaf_to_increment, string_name, atom_name)
   end
 
-  defp prepare_name_and_used_names(result_increment, used_names, string_name, atom_name) do
-    updated_used_names = used_names |> Map.put(atom_name, result_increment)
+  defp prepare_name_and_leaf_to_increment(
+         result_increment,
+         leaf_to_increment,
+         string_name,
+         atom_name
+       ) do
+    updated_leaf_to_increment = leaf_to_increment |> Map.put(atom_name, result_increment)
 
     updated_name =
       result_increment
@@ -120,6 +133,6 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
       end
       |> String.to_atom()
 
-    {updated_name, updated_used_names}
+    {updated_name, updated_leaf_to_increment}
   end
 end
