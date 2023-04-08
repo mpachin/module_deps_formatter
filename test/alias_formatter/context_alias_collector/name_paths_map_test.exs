@@ -117,7 +117,7 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
   end
 
   describe "get_alias_short_form/2" do
-    test "should increment state and return same short name" do
+    test "should not update state and should return same short name" do
       test_path = [:Test, :Module, :Aaa]
 
       paths_to_leaf = %{
@@ -135,6 +135,43 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
       assert {:Aaa, {^paths_to_leaf, ^leaf_to_path, %{Aaa: 1}}} =
                test_state
                |> NamePathsMap.get_alias_short_form(test_path)
+    end
+
+    test "should update state and return short name" do
+      [
+        {
+          {
+            %{
+              [:Test, :Module, :Aaa] => :Aaa
+            },
+            %{Aaa: [:Test, :Module, :Aaa]},
+            %{Aaa: 1}
+          },
+          [:Test, :Module, :Aaa, :Bbb],
+          {
+            :Bbb,
+            {
+              %{
+                [:Test, :Module, :Aaa] => :Aaa,
+                [:Test, :Module, :Aaa, :Bbb] => :Bbb
+              },
+              %{
+                Aaa: [:Test, :Module, :Aaa],
+                Bbb: [:Test, :Module, :Aaa, :Bbb]
+              },
+              %{
+                Aaa: 1,
+                Bbb: 1
+              }
+            }
+          }
+        }
+      ]
+      |> Enum.each(fn {original_state, test_path, expected_result} ->
+        assert ^expected_result =
+                 original_state
+                 |> NamePathsMap.get_alias_short_form(test_path)
+      end)
     end
   end
 end
