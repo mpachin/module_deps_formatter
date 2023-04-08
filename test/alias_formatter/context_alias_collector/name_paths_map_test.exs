@@ -9,40 +9,26 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
 
       assert {
                %{
-                 Test: %{
-                   Module: %{
-                     Aaa: ^alias_as
-                   }
-                 }
+                 [:Test, :Module, :Aaa] => ^alias_as
                },
-               %{Aaa: 1},
-               %{Aaa: ^alias_path}
+               %{Aaa: ^alias_path},
+               %{Aaa: 1}
              } = NamePathsMap.add_alias({%{}, %{}, %{}}, test_alias_data)
     end
 
     test "should preserve given map existing paths" do
       assert {
                %{
-                 Test: %{
-                   Module: %{
-                     Aaa: :Aaa
-                   },
-                   Module_2: %{
-                     Aaa: :Aaa_2
-                   }
-                 },
-                 Test_2: %{
-                   Module: %{
-                     Aaa: :Aaa_3
-                   }
-                 }
+                 [:Test, :Module, :Aaa] => :Aaa,
+                 [:Test, :Module_2, :Aaa] => :Aaa_2,
+                 [:Test_2, :Module, :Aaa] => :Aaa_3
                },
-               %{Aaa: 3},
                %{
                  Aaa: [:Test, :Module, :Aaa],
                  Aaa_2: [:Test, :Module_2, :Aaa],
                  Aaa_3: [:Test_2, :Module, :Aaa]
-               }
+               },
+               %{Aaa: 3}
              } =
                {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
@@ -53,26 +39,16 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
     test "should automatically postfix as: alias with increment if leaves collision found" do
       assert {
                %{
-                 Test: %{
-                   Module: %{
-                     Aaa: :Aaa
-                   },
-                   Module_2: %{
-                     Aaa: :Aaa_2
-                   }
-                 },
-                 Test_2: %{
-                   Module: %{
-                     Aaa: :Aaa_3
-                   }
-                 }
+                 [:Test, :Module, :Aaa] => :Aaa,
+                 [:Test, :Module_2, :Aaa] => :Aaa_2,
+                 [:Test_2, :Module, :Aaa] => :Aaa_3
                },
-               %{Aaa: 3},
                %{
                  Aaa: [:Test, :Module, :Aaa],
                  Aaa_2: [:Test, :Module_2, :Aaa],
                  Aaa_3: [:Test_2, :Module, :Aaa]
-               }
+               },
+               %{Aaa: 3}
              } =
                {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
@@ -83,26 +59,16 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
     test "should work correctly in border case collision" do
       assert {
                %{
-                 Test: %{
-                   Module: %{
-                     Aaa: :Aaa
-                   },
-                   Module_2: %{
-                     Aaa: :Aaa_2
-                   }
-                 },
-                 Test_2: %{
-                   Module: %{
-                     Aaa: :Aaa_3
-                   }
-                 }
+                 [:Test, :Module, :Aaa] => :Aaa,
+                 [:Test, :Module_2, :Aaa] => :Aaa_2,
+                 [:Test_2, :Module, :Aaa] => :Aaa_3
                },
-               %{Aaa: 3},
                %{
                  Aaa: [:Test, :Module, :Aaa],
                  Aaa_2: [:Test, :Module_2, :Aaa],
                  Aaa_3: [:Test_2, :Module, :Aaa]
-               }
+               },
+               %{Aaa: 3}
              } =
                {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa})
@@ -113,26 +79,16 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
     test "should base postfix on first input" do
       assert {
                %{
-                 Test: %{
-                   Module: %{
-                     Aaa: :Aaa_3
-                   },
-                   Module_2: %{
-                     Aaa: :Aaa_4
-                   }
-                 },
-                 Test_2: %{
-                   Module: %{
-                     Aaa: :Aaa_5
-                   }
-                 }
+                 [:Test, :Module, :Aaa] => :Aaa_3,
+                 [:Test, :Module_2, :Aaa] => :Aaa_4,
+                 [:Test_2, :Module, :Aaa] => :Aaa_5
                },
-               %{Aaa: 5},
                %{
                  Aaa_3: [:Test, :Module, :Aaa],
                  Aaa_4: [:Test, :Module_2, :Aaa],
                  Aaa_5: [:Test_2, :Module, :Aaa]
-               }
+               },
+               %{Aaa: 5}
              } =
                {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
@@ -143,20 +99,14 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
     test "should ignore duplicate paths" do
       assert {
                %{
-                 Test: %{
-                   Module: %{
-                     Aaa: :Aaa_3
-                   },
-                   Module_2: %{
-                     Aaa: :Aaa_4
-                   }
-                 }
+                 [:Test, :Module, :Aaa] => :Aaa_3,
+                 [:Test, :Module_2, :Aaa] => :Aaa_4
                },
-               %{Aaa: 4},
                %{
                  Aaa_3: [:Test, :Module, :Aaa],
                  Aaa_4: [:Test, :Module_2, :Aaa]
-               }
+               },
+               %{Aaa: 4}
              } =
                {%{}, %{}, %{}}
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
