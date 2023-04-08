@@ -115,4 +115,26 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
     end
   end
+
+  describe "get_alias_short_form/2" do
+    test "should increment state and return same short name" do
+      test_path = [:Test, :Module, :Aaa]
+
+      paths_to_leaf = %{
+        [:Test, :Module, :Aaa] => :Aaa
+      }
+
+      leaf_to_path = %{Aaa: test_path}
+
+      test_state = {
+        paths_to_leaf,
+        leaf_to_path,
+        %{Aaa: 1}
+      }
+
+      assert {:Aaa, {^paths_to_leaf, ^leaf_to_path, %{Aaa: 1}}} =
+               test_state
+               |> NamePathsMap.get_alias_short_form(test_path)
+    end
+  end
 end
