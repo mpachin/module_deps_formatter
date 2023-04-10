@@ -138,34 +138,110 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
     end
 
     test "should update state and return short name" do
-      [
+      test_case_1 = {
         {
+          %{
+            [:Test, :Module, :Aaa] => :Aaa
+          },
+          %{Aaa: [:Test, :Module, :Aaa]},
+          %{Aaa: 1}
+        },
+        [:Test, :Module, :Aaa, :Bbb],
+        {
+          :Bbb,
           {
             %{
-              [:Test, :Module, :Aaa] => :Aaa
+              [:Test, :Module, :Aaa] => :Aaa,
+              [:Test, :Module, :Aaa, :Bbb] => :Bbb
             },
-            %{Aaa: [:Test, :Module, :Aaa]},
-            %{Aaa: 1}
-          },
-          [:Test, :Module, :Aaa, :Bbb],
-          {
-            :Bbb,
-            {
-              %{
-                [:Test, :Module, :Aaa] => :Aaa,
-                [:Test, :Module, :Aaa, :Bbb] => :Bbb
-              },
-              %{
-                Aaa: [:Test, :Module, :Aaa],
-                Bbb: [:Test, :Module, :Aaa, :Bbb]
-              },
-              %{
-                Aaa: 1,
-                Bbb: 1
-              }
+            %{
+              Aaa: [:Test, :Module, :Aaa],
+              Bbb: [:Test, :Module, :Aaa, :Bbb]
+            },
+            %{
+              Aaa: 1,
+              Bbb: 1
             }
           }
         }
+      }
+
+      test_case_2 = {
+        {
+          %{
+            [:Test, :Module, :Aaa] => :Aaa,
+            [:Test, :Module, :Aaa, :Bbb] => :Bbb
+          },
+          %{
+            Aaa: [:Test, :Module, :Aaa],
+            Bbb: [:Test, :Module, :Aaa, :Bbb]
+          },
+          %{
+            Aaa: 1,
+            Bbb: 1
+          }
+        },
+        [:Test, :Module, :Aaa, :Bbb],
+        {
+          :Bbb,
+          {
+            %{
+              [:Test, :Module, :Aaa] => :Aaa,
+              [:Test, :Module, :Aaa, :Bbb] => :Bbb
+            },
+            %{
+              Aaa: [:Test, :Module, :Aaa],
+              Bbb: [:Test, :Module, :Aaa, :Bbb]
+            },
+            %{
+              Aaa: 1,
+              Bbb: 1
+            }
+          }
+        }
+      }
+
+      test_case_3 = {
+        {
+          %{
+            [:Test, :Module, :Aaa] => :Aaa,
+            [:Test, :Module, :Aaa, :Bbb] => :Bbb
+          },
+          %{
+            Aaa: [:Test, :Module, :Aaa],
+            Bbb: [:Test, :Module, :Aaa, :Bbb]
+          },
+          %{
+            Aaa: 1,
+            Bbb: 1
+          }
+        },
+        [:Test, :Module, :Aaa, :Ccc, :Bbb],
+        {
+          :Bbb_2,
+          {
+            %{
+              [:Test, :Module, :Aaa] => :Aaa,
+              [:Test, :Module, :Aaa, :Bbb] => :Bbb,
+              [:Test, :Module, :Aaa, :Ccc, :Bbb] => :Bbb_2
+            },
+            %{
+              Aaa: [:Test, :Module, :Aaa],
+              Bbb: [:Test, :Module, :Aaa, :Bbb],
+              Bbb_2: [:Test, :Module, :Aaa, :Ccc, :Bbb]
+            },
+            %{
+              Aaa: 1,
+              Bbb: 2
+            }
+          }
+        }
+      }
+
+      [
+        test_case_1,
+        test_case_2,
+        test_case_3
       ]
       |> Enum.each(fn {original_state, test_path, expected_result} ->
         assert ^expected_result =
