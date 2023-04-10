@@ -12,18 +12,26 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
   end
 
   def get_alias_short_form(
-        {_, %{} = leaf_to_path, _} = state,
+        {%{} = paths_to_leaf, %{} = leaf_to_path, _} = state,
         name_path
       ) do
-    full_name_path = get_full_name_path(name_path, leaf_to_path)
+    paths_to_leaf
+    |> Map.get(name_path)
+    |> case do
+      nil ->
+        full_name_path = get_full_name_path(name_path, leaf_to_path)
 
-    last_name = List.last(full_name_path)
+        last_name = List.last(full_name_path)
 
-    updated_state = add_alias(state, {full_name_path, last_name})
+        updated_state = add_alias(state, {full_name_path, last_name})
 
-    updated_name = get_updated_name(updated_state, last_name)
+        updated_name = get_updated_name(updated_state, last_name)
 
-    {updated_name, updated_state}
+        {updated_name, updated_state}
+
+      alias_as ->
+        {alias_as, state}
+    end
   end
 
   defp get_updated_name({_, _, %{} = leaf_to_increment}, name) do

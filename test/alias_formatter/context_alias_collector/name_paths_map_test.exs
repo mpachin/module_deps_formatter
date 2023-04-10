@@ -238,10 +238,28 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
         }
       }
 
+      test_case_4 = {
+        {
+          %{[:Test, :Module, :Aaa] => :AliasAs},
+          %{AliasAs: [:Test, :Module, :Aaa]},
+          %{AliasAs: 1}
+        },
+        [:Test, :Module, :Aaa],
+        {
+          :AliasAs,
+          {
+            %{[:Test, :Module, :Aaa] => :AliasAs},
+            %{AliasAs: [:Test, :Module, :Aaa]},
+            %{AliasAs: 1}
+          }
+        }
+      }
+
       [
         test_case_1,
         test_case_2,
-        test_case_3
+        test_case_3,
+        test_case_4
       ]
       |> Enum.each(fn {original_state, test_path, expected_result} ->
         assert ^expected_result =
