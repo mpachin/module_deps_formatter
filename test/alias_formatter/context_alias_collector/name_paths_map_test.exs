@@ -114,14 +114,35 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
                |> NamePathsMap.add_alias({[:Test, :Module, :Aaa], :Aaa_3})
                |> NamePathsMap.add_alias({[:Test, :Module_2, :Aaa], :Aaa_2})
     end
+
+    test "should keep first found alias_as and update only leaf_to_path" do
+      test_name_path = [:Test, :Module, :Aaa]
+
+      test_paths_to_leaf = %{
+        test_name_path => :FirstAliasAs
+      }
+
+      test_leaf_to_count = %{FirstAliasAs: 1}
+
+      test_leaf_to_path = %{FirstAliasAs: test_name_path}
+      expected_leaf_to_path = Map.put(test_leaf_to_path, :SecondAliasAs, test_name_path)
+
+      assert {
+               ^test_paths_to_leaf,
+               ^expected_leaf_to_path,
+               ^test_leaf_to_count
+             } =
+               {test_paths_to_leaf, test_leaf_to_path, test_leaf_to_count}
+               |> NamePathsMap.add_alias({test_name_path, :SecondAliasAs})
+    end
   end
 
   describe "get_alias_short_form/2" do
-    test "should not update state and should return same short name" do
+    test "should not update state and should return same short name on direct name_path match" do
       test_path = [:Test, :Module, :Aaa]
 
       paths_to_leaf = %{
-        [:Test, :Module, :Aaa] => :Aaa
+        test_path => :Aaa
       }
 
       leaf_to_path = %{Aaa: test_path}
@@ -135,6 +156,25 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMapTest do
       assert {:Aaa, {^paths_to_leaf, ^leaf_to_path, %{Aaa: 1}}} =
                test_state
                |> NamePathsMap.get_alias_short_form(test_path)
+    end
+
+    test "should not update state and should return same short name on composed name_patch match" do
+      last_name = :Aaa
+      test_path = [:Test, :Module, last_name]
+
+      paths_to_leaf = %{test_path => last_name}
+
+      leaf_to_path = %{last_name => test_path}
+
+      test_state = {
+        paths_to_leaf,
+        leaf_to_path,
+        %{last_name => 1}
+      }
+
+      assert {^last_name, {^paths_to_leaf, ^leaf_to_path, %{^last_name => 1}}} =
+               test_state
+               |> NamePathsMap.get_alias_short_form([last_name])
     end
 
     test "should update state and return short name" do

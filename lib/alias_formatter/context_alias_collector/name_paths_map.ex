@@ -1,11 +1,19 @@
 defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
   def add_alias(
-        {%{} = paths_to_leaf, %{} = _, %{} = _} = state,
-        {name_path, _alias_as} = alias_data
+        {%{} = paths_to_leaf, %{} = leaf_to_path, %{} = leaf_to_increment} = state,
+        {name_path, alias_as} = alias_data
       )
       when is_list(name_path) do
     if Map.has_key?(paths_to_leaf, name_path) do
-      state
+      if Map.has_key?(leaf_to_path, alias_as) do
+        state
+      else
+        {
+          paths_to_leaf,
+          leaf_to_path |> Map.put(alias_as, name_path),
+          leaf_to_increment
+        }
+      end
     else
       populate_map_with_alias(state, alias_data)
     end
@@ -21,13 +29,21 @@ defmodule AliasFormatter.ContextAliasCollector.NamePathsMap do
       nil ->
         full_name_path = get_full_name_path(name_path, leaf_to_path)
 
-        last_name = List.last(full_name_path)
+        paths_to_leaf
+        |> Map.get(full_name_path)
+        |> case do
+          nil ->
+            last_name = List.last(full_name_path)
 
-        updated_state = add_alias(state, {full_name_path, last_name})
+            updated_state = add_alias(state, {full_name_path, last_name})
 
-        updated_name = get_updated_name(updated_state, last_name)
+            updated_name = get_updated_name(updated_state, last_name)
 
-        {updated_name, updated_state}
+            {updated_name, updated_state}
+
+          alias_as ->
+            {alias_as, state}
+        end
 
       alias_as ->
         {alias_as, state}
