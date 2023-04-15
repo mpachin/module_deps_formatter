@@ -1,8 +1,8 @@
-defmodule AliasFormatter.DefSubstituteTest do
+defmodule AliasFormatter.DefmoduleSubstitute.DefSubstituteTest do
   use ExUnit.Case
 
   alias AliasFormatter.ContextAliasCollector
-  alias AliasFormatter.DefSubstitute
+  alias AliasFormatter.DefmoduleSubstitute.DefSubstitute
 
   setup do
     pid = ContextAliasCollector.start_link([])

@@ -1,4 +1,4 @@
-defmodule AliasFormatter.DefSubstitute do
+defmodule AliasFormatter.DefmoduleSubstitute.DefSubstitute do
   alias AliasFormatter.AST
   alias AliasFormatter.ContextAliasCollector
 
