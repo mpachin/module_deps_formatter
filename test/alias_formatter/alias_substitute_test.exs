@@ -1,7 +1,7 @@
-defmodule AliasFormatter.AliasSubstituteTest do
+defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstituteTest do
   use ExUnit.Case
 
-  alias AliasFormatter.AliasSubstitute
+  alias AliasFormatter.DefmoduleSubstitute.AliasSubstitute
 
   describe "substitute/1" do
     test "should change alias ast from short form to explicit multiline form" do

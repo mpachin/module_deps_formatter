@@ -1,4 +1,4 @@
-defmodule AliasFormatter.AliasSubstitute do
+defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstitute do
   def substitute({
         :alias,
         _,
