@@ -1,9 +1,8 @@
 defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstitute do
-  alias AliasFormatter.AST
   alias AliasFormatter.ContextAliasCollector
 
   def retrieve_aliases_from_ast(ast_list, alias_collector_pid) do
-    {alias_asts_list, rest_asts_list} = AST.split_aliases(ast_list)
+    {alias_asts_list, rest_asts_list} = split_aliases(ast_list)
 
     alias_asts_list
     |> Enum.each(&substitute(&1, alias_collector_pid))
@@ -69,4 +68,12 @@ defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstitute do
   end
 
   defp substitute(ast_fragment, _alias_collector_pid), do: ast_fragment
+
+  defp split_aliases(do_block_ast_list) do
+    do_block_ast_list
+    |> Enum.split_with(fn
+      {:alias, _, _} -> true
+      _ -> false
+    end)
+  end
 end
