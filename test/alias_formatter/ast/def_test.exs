@@ -1,8 +1,8 @@
-defmodule AliasFormatter.DefmoduleSubstitute.DefSubstituteTest do
+defmodule AliasFormatter.AST.DefTest do
   use ExUnit.Case
 
+  alias AliasFormatter.AST.Def
   alias AliasFormatter.ContextAliasCollector
-  alias AliasFormatter.DefmoduleSubstitute.DefSubstitute
 
   setup do
     pid = ContextAliasCollector.start_link([])
@@ -22,7 +22,7 @@ defmodule AliasFormatter.DefmoduleSubstitute.DefSubstituteTest do
                     }
                   ]
                 ]}
-               |> DefSubstitute.substitute(pid)
+               |> Def.substitute(pid)
 
       assert [] = ContextAliasCollector.get_result_aliases(pid)
     end
@@ -40,7 +40,7 @@ defmodule AliasFormatter.DefmoduleSubstitute.DefSubstituteTest do
            ]
          ]}
 
-      assert ^test_function_ast = DefSubstitute.substitute(test_function_ast, pid)
+      assert ^test_function_ast = Def.substitute(test_function_ast, pid)
 
       assert [] = ContextAliasCollector.get_result_aliases(pid)
     end
@@ -58,7 +58,7 @@ defmodule AliasFormatter.DefmoduleSubstitute.DefSubstituteTest do
       ]
 
       for test_alias_ast <- test_alias_asts do
-        assert ^test_alias_ast = DefSubstitute.substitute(test_alias_ast, pid)
+        assert ^test_alias_ast = Def.substitute(test_alias_ast, pid)
       end
 
       assert [] = ContextAliasCollector.get_result_aliases(pid)
@@ -96,7 +96,7 @@ defmodule AliasFormatter.DefmoduleSubstitute.DefSubstituteTest do
            ]
          ]}
 
-      assert ^expected_result_ast = DefSubstitute.substitute(test_ast, pid)
+      assert ^expected_result_ast = Def.substitute(test_ast, pid)
 
       assert ^expected_alias_pairs = ContextAliasCollector.get_result_aliases(pid)
     end

@@ -1,4 +1,4 @@
-defmodule AliasFormatter.DefmoduleSubstitute.DefSubstitute do
+defmodule AliasFormatter.AST.Def do
   alias AliasFormatter.AST.Alias
 
   def substitute(
