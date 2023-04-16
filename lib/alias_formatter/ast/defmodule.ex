@@ -42,9 +42,8 @@ defmodule AliasFormatter.AST.Defmodule do
   end
 
   defp process_content_ast({:alias, _, _} = alias_ast, alias_collector_pid) do
-    Alias.substitute(alias_ast, alias_collector_pid)
-
-    []
+    [alias_ast]
+    |> Alias.retrieve_aliases_from_ast(alias_collector_pid)
   end
 
   defp process_content_ast(content_ast, alias_collector_pid) do
