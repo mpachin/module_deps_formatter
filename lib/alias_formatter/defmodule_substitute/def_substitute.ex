@@ -1,5 +1,5 @@
 defmodule AliasFormatter.DefmoduleSubstitute.DefSubstitute do
-  alias AliasFormatter.DefmoduleSubstitute.AliasSubstitute
+  alias AliasFormatter.AST.Alias
 
   def substitute(
         {
@@ -21,8 +21,7 @@ defmodule AliasFormatter.DefmoduleSubstitute.DefSubstitute do
         },
         alias_collector_pid
       ) do
-    updated_ast_block =
-      AliasSubstitute.retrieve_aliases_from_ast(second_block_ast, alias_collector_pid)
+    updated_ast_block = Alias.retrieve_aliases_from_ast(second_block_ast, alias_collector_pid)
 
     do_block_options
     |> Keyword.get(:format)

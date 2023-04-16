@@ -1,4 +1,4 @@
-defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstitute do
+defmodule AliasFormatter.AST.Alias do
   alias AliasFormatter.ContextAliasCollector
 
   def retrieve_aliases_from_ast(ast_list, alias_collector_pid) do

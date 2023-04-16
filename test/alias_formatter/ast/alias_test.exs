@@ -1,8 +1,8 @@
-defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstituteTest do
+defmodule AliasFormatter.AST.AliasTest do
   use ExUnit.Case
 
+  alias AliasFormatter.AST.Alias
   alias AliasFormatter.ContextAliasCollector
-  alias AliasFormatter.DefmoduleSubstitute.AliasSubstitute
 
   setup do
     pid = ContextAliasCollector.start_link([])
@@ -30,7 +30,7 @@ defmodule AliasFormatter.DefmoduleSubstitute.AliasSubstituteTest do
 
       assert ^expected_alias_list =
                test_ast_list
-               |> AliasSubstitute.retrieve_aliases_from_ast(pid)
+               |> Alias.retrieve_aliases_from_ast(pid)
 
       assert ^expected_retrieved_aliases = ContextAliasCollector.get_result_aliases(pid)
     end
