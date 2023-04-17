@@ -2,18 +2,17 @@ defmodule AliasFormatter.AST.FileTest do
   use ExUnit.Case
 
   alias AliasFormatter.AST.File
-  alias AliasFormatter.ContextAliasCollector
 
   describe "substitute/2" do
-    test "should retrieve alias when it is the only content" do
+    test "should process alias when it is the only content" do
       last_module_name = :Three
       name_path = [:One, :Two, last_module_name]
       alias_ast = get_alias_ast(name_path)
 
-      assert {:__block__, [], []} = File.substitute(alias_ast)
+      assert {:__block__, [], [^alias_ast]} = File.substitute(alias_ast)
     end
 
-    test "should retrieve alias when it have other content" do
+    test "should process alias when file ast have other content" do
       last_module_name = :Three
       name_path = [:One, :Two, last_module_name]
       file_level_alias_ast = get_alias_ast(name_path)
@@ -23,7 +22,13 @@ defmodule AliasFormatter.AST.FileTest do
       defmodule_ast = get_defmodule_ast([module_level_alias_ast])
 
       input_ast = get_file_ast([file_level_alias_ast, defmodule_ast])
-      expected_ast = [get_defmodule_ast()] |> get_file_ast()
+
+      expected_ast =
+        [
+          file_level_alias_ast,
+          get_defmodule_ast()
+        ]
+        |> get_file_ast()
 
       assert ^expected_ast = File.substitute(input_ast)
     end
