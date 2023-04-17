@@ -10,6 +10,29 @@ defmodule AliasFormatter.AST.Alias do
     rest_asts_list
   end
 
+  def get_result_context_aliases(alias_collector_pid) do
+    alias_collector_pid
+    |> ContextAliasCollector.get_result_aliases()
+    |> Enum.map(fn {name_path, alias_as} ->
+      name_path
+      |> List.last()
+      |> case do
+        ^alias_as ->
+          {:alias, [line: 1], [{:__aliases__, [line: 1], name_path}]}
+
+        _ ->
+          {:alias, [line: 1],
+           [
+             {:__aliases__, [line: 1], name_path},
+             [
+               {{:__block__, [format: :keyword, line: 1], [:as]},
+                {:__aliases__, [line: 1], alias_as}}
+             ]
+           ]}
+      end
+    end)
+  end
+
   defp substitute(
          {:alias, _, [{:__aliases__, _, name_path}]},
          alias_collector_pid

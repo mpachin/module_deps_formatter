@@ -36,6 +36,34 @@ defmodule AliasFormatter.AST.AliasTest do
     end
   end
 
+  describe "get_result_context_aliases/1" do
+    test "should return aliases ast list", %{pid: pid} do
+      first_name_path = [:Aaa, :Bbb]
+      first_alias_as = List.last(first_name_path)
+
+      second_name_path = [:Aaa, :Bbb, :Ccc]
+      second_alias_as = :CccAliasAs
+
+      [
+        {first_name_path, first_alias_as},
+        {second_name_path, second_alias_as}
+      ]
+      |> Enum.map(&ContextAliasCollector.add_alias(pid, &1))
+
+      assert [
+               {:alias, [line: 1], [{:__aliases__, [line: 1], ^first_name_path}]},
+               {:alias, [line: 1],
+                [
+                  {:__aliases__, [line: 1], ^second_name_path},
+                  [
+                    {{:__block__, [format: :keyword, line: 1], [:as]},
+                     {:__aliases__, [line: 1], ^second_alias_as}}
+                  ]
+                ]}
+             ] = Alias.get_result_context_aliases(pid)
+    end
+  end
+
   defp get_test_simple_form_alias do
     test_last_module = :Two
     test_name_path = [:One, test_last_module]
