@@ -3,6 +3,9 @@ defmodule AliasFormatter.ContextAliasCollector do
 
   alias AliasFormatter.ContextAliasCollector.NamePathsMap
 
+  def get_alias_collector_pid,
+    do: start_link([])
+
   def add_alias(pid, {name_path, alias_as} = alias_data)
       when is_pid(pid) and is_list(name_path) and is_atom(alias_as) do
     GenServer.cast(pid, {:add_alias, alias_data})
@@ -51,6 +54,6 @@ defmodule AliasFormatter.ContextAliasCollector do
     |> Enum.sort(fn {name_path_1, _}, {name_path_2, _} ->
       Enum.join(name_path_1) <= Enum.join(name_path_2)
     end)
-    |> then(&{:reply, &1, state})
+    |> then(&{:stop, :normal, {&1, state}, state})
   end
 end

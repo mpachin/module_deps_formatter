@@ -11,8 +11,9 @@ defmodule AliasFormatter.AST.Alias do
   end
 
   def get_result_context_aliases(alias_collector_pid) do
-    alias_collector_pid
-    |> ContextAliasCollector.get_result_aliases()
+    {result_aliases, state} = ContextAliasCollector.get_result_aliases(alias_collector_pid)
+
+    result_aliases
     |> Enum.map(fn {name_path, alias_as} ->
       name_path
       |> List.last()
@@ -31,6 +32,7 @@ defmodule AliasFormatter.AST.Alias do
            ]}
       end
     end)
+    |> then(&{&1, state})
   end
 
   defp substitute(

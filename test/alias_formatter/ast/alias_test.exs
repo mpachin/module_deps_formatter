@@ -32,7 +32,7 @@ defmodule AliasFormatter.AST.AliasTest do
                test_ast_list
                |> Alias.retrieve_aliases_from_ast(pid)
 
-      assert ^expected_retrieved_aliases = ContextAliasCollector.get_result_aliases(pid)
+      assert {^expected_retrieved_aliases, _} = ContextAliasCollector.get_result_aliases(pid)
     end
   end
 
@@ -50,17 +50,29 @@ defmodule AliasFormatter.AST.AliasTest do
       ]
       |> Enum.map(&ContextAliasCollector.add_alias(pid, &1))
 
-      assert [
-               {:alias, [line: 1], [{:__aliases__, [line: 1], ^first_name_path}]},
-               {:alias, [line: 1],
-                [
-                  {:__aliases__, [line: 1], ^second_name_path},
-                  [
-                    {{:__block__, [format: :keyword, line: 1], [:as]},
-                     {:__aliases__, [line: 1], ^second_alias_as}}
-                  ]
-                ]}
-             ] = Alias.get_result_context_aliases(pid)
+      expected_state = {
+        %{
+          [:Aaa, :Bbb] => :Bbb,
+          [:Aaa, :Bbb, :Ccc] => :CccAliasAs
+        },
+        %{
+          Bbb: [:Aaa, :Bbb],
+          CccAliasAs: [:Aaa, :Bbb, :Ccc]
+        },
+        %{Bbb: 1, CccAliasAs: 1}
+      }
+
+      assert {[
+                {:alias, [line: 1], [{:__aliases__, [line: 1], ^first_name_path}]},
+                {:alias, [line: 1],
+                 [
+                   {:__aliases__, [line: 1], ^second_name_path},
+                   [
+                     {{:__block__, [format: :keyword, line: 1], [:as]},
+                      {:__aliases__, [line: 1], ^second_alias_as}}
+                   ]
+                 ]}
+              ], ^expected_state} = Alias.get_result_context_aliases(pid)
     end
   end
 

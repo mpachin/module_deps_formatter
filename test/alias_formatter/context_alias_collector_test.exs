@@ -31,7 +31,9 @@ defmodule AliasFormatter.ContextAliasCollectorTest do
   end
 
   describe "get_result_aliases/1" do
-    test "should return result aliases as sorted list", %{pid: pid} do
+    test "should return result aliases, genserver state and should close genserver process", %{
+      pid: pid
+    } do
       [
         {[:Aaa, :Bbb, :Ccc], :CccAliasAs},
         {[:Aaa, :Bbb], :Bbb},
@@ -41,11 +43,31 @@ defmodule AliasFormatter.ContextAliasCollectorTest do
         ContextAliasCollector.add_alias(pid, test_alias_data)
       end)
 
-      assert [
-               {[:Aaa, :Bbb], :Bbb},
-               {[:Aaa, :Bbb, :Ccc], :CccAliasAs},
-               {[:Aaa, :Yyy], :YyyAliasAs}
-             ] = ContextAliasCollector.get_result_aliases(pid)
+      expected_state = {
+        %{
+          [:Aaa, :Bbb] => :Bbb,
+          [:Aaa, :Bbb, :Ccc] => :CccAliasAs,
+          [:Aaa, :Yyy] => :YyyAliasAs
+        },
+        %{
+          Bbb: [:Aaa, :Bbb],
+          CccAliasAs: [:Aaa, :Bbb, :Ccc],
+          YyyAliasAs: [:Aaa, :Yyy]
+        },
+        %{
+          Bbb: 1,
+          CccAliasAs: 1,
+          YyyAliasAs: 1
+        }
+      }
+
+      assert {[
+                {[:Aaa, :Bbb], :Bbb},
+                {[:Aaa, :Bbb, :Ccc], :CccAliasAs},
+                {[:Aaa, :Yyy], :YyyAliasAs}
+              ], ^expected_state} = ContextAliasCollector.get_result_aliases(pid)
+
+      assert not Process.alive?(pid)
     end
   end
 end
