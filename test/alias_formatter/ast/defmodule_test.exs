@@ -2,15 +2,9 @@ defmodule AliasFormatter.AST.DefmoduleTest do
   use ExUnit.Case
 
   alias AliasFormatter.AST.Defmodule
-  alias AliasFormatter.ContextAliasCollector
-
-  setup do
-    pid = ContextAliasCollector.start_link([])
-    [pid: pid]
-  end
 
   describe "substitute/2" do
-    test "should change defmodule ast to use block do...end", %{pid: pid} do
+    test "should change defmodule ast to use block do...end" do
       do_block_ast_list_without_aliases = get_do_block_ast_list_without_aliases()
 
       expected_ast =
@@ -20,50 +14,45 @@ defmodule AliasFormatter.AST.DefmoduleTest do
       assert ^expected_ast =
                do_block_ast_list_without_aliases
                |> get_defmodule_ast_formatted_wrong()
-               |> Defmodule.substitute(pid)
-
-      assert [] = ContextAliasCollector.get_result_aliases(pid)
+               |> Defmodule.substitute()
     end
 
-    test "should keep defmodule ast untouched if it has correct structure", %{pid: pid} do
+    test "should keep defmodule ast untouched if it has correct structure" do
       expected_ast =
         get_do_block_ast_list_without_aliases()
         |> get_defmodule_ast_formatted_right()
 
-      assert ^expected_ast = Defmodule.substitute(expected_ast, pid)
-      assert [] = ContextAliasCollector.get_result_aliases(pid)
+      assert ^expected_ast = Defmodule.substitute(expected_ast)
     end
 
-    test "should retrieve alias from ast", %{pid: pid} do
+    test "should hoist alias from def to defmodule level" do
       last_module_name = :Three
       name_path = [:One, :Two, last_module_name]
-      do_block_ast_list_with_alias = get_do_block_ast_list_with_alias(name_path)
+      alias_ast = name_path |> get_alias_ast()
 
       expected_ast =
-        get_do_block_ast_list_without_aliases()
+        ([alias_ast] ++ get_do_block_ast_list_without_aliases())
         |> get_defmodule_ast_formatted_right()
 
-      assert ^expected_ast =
-               do_block_ast_list_with_alias
+      assert expected_ast ==
+               [alias_ast]
+               |> get_do_block_ast_list_with_alias()
                |> get_defmodule_ast_formatted_right()
-               |> Defmodule.substitute(pid)
-
-      assert [{^name_path, ^last_module_name}] = ContextAliasCollector.get_result_aliases(pid)
+               |> Defmodule.substitute()
     end
 
-    test "should retrieve alias when it is the only content", %{pid: pid} do
+    test "should retrieve alias when it is the only content" do
       last_module_name = :Three
       name_path = [:One, :Two, last_module_name]
-      alias_ast = get_alias_ast(name_path)
+      alias_ast = name_path |> get_alias_ast()
 
-      expected_ast = get_defmodule_ast_formatted_right([])
+      original_ast =
+        alias_ast
+        |> get_defmodule_ast_formatted_right()
 
-      assert ^expected_ast =
-               alias_ast
-               |> get_defmodule_ast_formatted_right()
-               |> Defmodule.substitute(pid)
+      expected_ast = [alias_ast] |> get_defmodule_ast_formatted_right()
 
-      assert [{^name_path, ^last_module_name}] = ContextAliasCollector.get_result_aliases(pid)
+      assert expected_ast == original_ast |> Defmodule.substitute()
     end
   end
 
@@ -98,15 +87,24 @@ defmodule AliasFormatter.AST.DefmoduleTest do
     ]
   end
 
-  defp get_do_block_ast_list_with_alias(name_path) do
-    alias_ast = get_alias_ast(name_path)
-
-    do_block_ast_list_without_aliases = get_do_block_ast_list_without_aliases()
-
-    do_block_ast_list_without_aliases ++ [alias_ast]
+  defp get_do_block_ast_list_with_alias(alias_ast_list) do
+    [
+      {:def, [line: 2],
+       [
+         {:first, [line: 2], nil},
+         [
+           {{:__block__, [line: 2], [:do]},
+            {:__block__, [],
+             alias_ast_list ++
+               [
+                 {:__block__, [line: 4], ["first"]}
+               ]}}
+         ]
+       ]}
+    ]
   end
 
   defp get_alias_ast(name_path) do
-    {:alias, [line: 5], [{:__aliases__, [line: 5], name_path}]}
+    {:alias, [line: 1], [{:__aliases__, [line: 1], name_path}]}
   end
 end
