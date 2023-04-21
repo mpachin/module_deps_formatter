@@ -54,10 +54,12 @@ defmodule AliasFormatter.AST.Def do
 
   def substitute(ast_fragment, _alias_collector_pid), do: ast_fragment
 
-  def unwrap_ast([expr]) when not is_list(expr) and not is_tuple(expr),
+  defp unwrap_ast([expr]) when not is_list(expr) and not is_tuple(expr),
     do: expr
 
-  def unwrap_ast([]), do: nil
+  defp unwrap_ast([]), do: nil
 
-  def unwrap_ast(ast_block), do: ast_block
+  defp unwrap_ast([{:__block__, _, content_ast}]), do: unwrap_ast(content_ast)
+
+  defp unwrap_ast(ast_block), do: ast_block
 end

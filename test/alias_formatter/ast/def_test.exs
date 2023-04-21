@@ -24,7 +24,7 @@ defmodule AliasFormatter.AST.DefTest do
                 ]}
                |> Def.substitute(pid)
 
-      assert [] = ContextAliasCollector.get_result_aliases(pid)
+      assert {[], _} = ContextAliasCollector.get_result_aliases(pid)
     end
 
     test "should keep function ast unchanged if format: :keyword is presented", %{pid: pid} do
@@ -42,7 +42,7 @@ defmodule AliasFormatter.AST.DefTest do
 
       assert ^test_function_ast = Def.substitute(test_function_ast, pid)
 
-      assert [] = ContextAliasCollector.get_result_aliases(pid)
+      assert {[], _} = ContextAliasCollector.get_result_aliases(pid)
     end
 
     test "shouldn't change alias asts", %{pid: pid} do
@@ -61,7 +61,7 @@ defmodule AliasFormatter.AST.DefTest do
         assert ^test_alias_ast = Def.substitute(test_alias_ast, pid)
       end
 
-      assert [] = ContextAliasCollector.get_result_aliases(pid)
+      assert {[], _} = ContextAliasCollector.get_result_aliases(pid)
     end
 
     test "should remove aliases from def bodies and return alias pairs list", %{pid: pid} do
@@ -98,7 +98,39 @@ defmodule AliasFormatter.AST.DefTest do
 
       assert ^expected_result_ast = Def.substitute(test_ast, pid)
 
-      assert ^expected_alias_pairs = ContextAliasCollector.get_result_aliases(pid)
+      assert {^expected_alias_pairs, _} = ContextAliasCollector.get_result_aliases(pid)
+    end
+
+    test "should unwrap __block__ to do: when it is the only ast content left", %{pid: pid} do
+      test_name_path = [:One, :Two, :Three]
+      test_alias_as = List.last(test_name_path)
+
+      expected_alias_pairs = [{test_name_path, test_alias_as}]
+
+      original_ast =
+        {:def, [line: 2],
+         [
+           {:first, [line: 2], nil},
+           [
+             {{:__block__, [line: 2], [:do]},
+              {:__block__, [],
+               [
+                 {:alias, [line: 1], [{:__aliases__, [line: 1], test_name_path}]},
+                 {:__block__, [line: 4], ["first"]}
+               ]}}
+           ]
+         ]}
+
+      expected_ast =
+        {:def, [line: 2],
+         [
+           {:first, [line: 2], nil},
+           [do: "first"]
+         ]}
+
+      assert expected_ast == Def.substitute(original_ast, pid)
+
+      assert {^expected_alias_pairs, _} = ContextAliasCollector.get_result_aliases(pid)
     end
   end
 end
