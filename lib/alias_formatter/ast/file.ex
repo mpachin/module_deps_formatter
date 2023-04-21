@@ -22,9 +22,7 @@ defmodule AliasFormatter.AST.File do
     processed_ast =
       ast_without_aliases
       |> Enum.map(fn content_ast ->
-        # TODO: move its creation into AST.Defmodule
-        content_level_pid = ContextAliasCollector.get_alias_collector_pid()
-        Defmodule.substitute(content_ast, content_level_pid)
+        Defmodule.substitute(content_ast)
       end)
 
     {:__block__, [], result_context_aliases ++ processed_ast}

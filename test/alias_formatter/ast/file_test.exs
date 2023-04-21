@@ -5,49 +5,41 @@ defmodule AliasFormatter.AST.FileTest do
 
   describe "substitute/2" do
     test "should process alias when it is the only content" do
-      last_module_name = :Three
-      name_path = [:One, :Two, last_module_name]
-      alias_ast = get_alias_ast(name_path)
+      {processed_alias_ast, unprocessed_alias_ast} = get_alias_asts([:One, :Two, :Three])
 
-      assert {:__block__, [], [^alias_ast]} = File.substitute(alias_ast)
+      assert {:__block__, [], [^processed_alias_ast]} = File.substitute(unprocessed_alias_ast)
     end
 
-    test "should process alias when file ast have other content" do
-      last_module_name = :Three
-      name_path = [:One, :Two, last_module_name]
-      file_level_alias_ast = get_alias_ast(name_path)
+    test "should process and hoist aliases in file and defmodule" do
+      file_level_name_path = [:One, :Two, :Three]
 
-      module_level_alias_ast = get_alias_ast(name_path ++ [:Four])
+      {file_processed_alias, file_unprocessed_alias} = get_alias_asts(file_level_name_path)
 
-      defmodule_ast = get_defmodule_ast([module_level_alias_ast])
+      {defmodule_processed_alias, defmodule_unprocessed_alias} =
+        get_alias_asts(file_level_name_path)
 
-      input_ast = get_file_ast([file_level_alias_ast, defmodule_ast])
-
-      expected_ast =
-        [
-          file_level_alias_ast,
-          get_defmodule_ast()
-        ]
+      input_ast =
+        get_def_ast()
+        |> then(&[&1, defmodule_unprocessed_alias])
+        |> get_defmodule_ast()
+        |> then(&[&1, file_unprocessed_alias])
         |> get_file_ast()
 
-      assert ^expected_ast = File.substitute(input_ast)
+      expected_ast =
+        get_def_ast()
+        |> then(&[defmodule_processed_alias, &1])
+        |> get_defmodule_ast()
+        |> then(&[file_processed_alias, &1])
+        |> get_file_ast()
+
+      assert expected_ast == File.substitute(input_ast)
     end
   end
 
-  defp get_file_ast(content_ast_list) do
-    {:__block__, [], content_ast_list}
-  end
+  defp get_file_ast(content_ast_list),
+    do: {:__block__, [], content_ast_list}
 
-  defp get_defmodule_ast(do_block_ast_list \\ []) do
-    do_block_content =
-      [
-        {:def, [line: 2],
-         [
-           {:first, [line: 2], nil},
-           [do: "first"]
-         ]}
-      ] ++ do_block_ast_list
-
+  defp get_defmodule_ast(do_block_content) do
     {:defmodule, [line: 1],
      [
        {:__aliases__, [line: 1], [:TestModuleExample]},
@@ -57,7 +49,31 @@ defmodule AliasFormatter.AST.FileTest do
      ]}
   end
 
-  defp get_alias_ast(name_path) do
-    {:alias, [line: 1], [{:__aliases__, [line: 1], name_path}]}
+  defp get_def_ast do
+    {:def, [line: 2],
+     [
+       {:first, [line: 2], nil},
+       [do: "first"]
+     ]}
+  end
+
+  defp get_alias_asts(name_path) do
+    {unfinished_name_path, [last_module_name]} = Enum.split(name_path, -1)
+
+    processed_alias_ast = get_processed_alias_ast(name_path)
+    unprocessed_alias_ast = get_unprocessed_alias_ast(unfinished_name_path, last_module_name)
+
+    {processed_alias_ast, unprocessed_alias_ast}
+  end
+
+  defp get_processed_alias_ast(name_path),
+    do: {:alias, [line: 1], [{:__aliases__, [line: 1], name_path}]}
+
+  defp get_unprocessed_alias_ast(name_path, last_module_name) do
+    {:alias, [line: 1],
+     [
+       {{:., [line: 1], [{:__aliases__, [line: 1], name_path}, :{}]}, [line: 1],
+        [{:__aliases__, [line: 1], [last_module_name]}]}
+     ]}
   end
 end
