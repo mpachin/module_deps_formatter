@@ -131,4 +131,43 @@ defmodule AliasFormatterTest do
 
     assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
   end
+
+  test "should remove alias duplicates" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa
+      alias TestModuleExample.Aaa
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
+
+  test "should remove alias duplicates in complex nestings" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Nested.Bbb
+      alias TestModuleExample.Nested.Bbb.Bbb
+      alias TestModuleExample.Nested.{Ccc.Ccc, Aaa.Aaa}
+      alias TestModuleExample.Nested.{Ccc.Ccc, Aaa.Aaa, Bbb.Bbb}
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Nested.Aaa.Aaa
+      alias TestModuleExample.Nested.Bbb
+      alias TestModuleExample.Nested.Bbb.Bbb, as: Bbb_2
+      alias TestModuleExample.Nested.Ccc.Ccc
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
 end
