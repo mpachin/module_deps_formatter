@@ -10,30 +10,45 @@ defmodule AliasFormatter.AST.Defmodule do
            [
              {
                {:__block__, _, [:do]},
-               {:__block__, _, content_ast}
+               {:__block__, _, content_ast_list}
              }
            ]
          ]}
       ) do
-    process_defmodule(defmodule_options, defmodule_alias, content_ast)
+    process_defmodule(defmodule_options, defmodule_alias, content_ast_list)
   end
 
   def substitute(
         {:defmodule, defmodule_options,
          [
            defmodule_alias,
-           [do: {:__block__, _, content_ast}]
+           [
+             {
+               {:__block__, _, [:do]},
+               single_content_ast
+             }
+           ]
          ]}
       ) do
-    process_defmodule(defmodule_options, defmodule_alias, content_ast)
+    process_defmodule(defmodule_options, defmodule_alias, [single_content_ast])
+  end
+
+  def substitute(
+        {:defmodule, defmodule_options,
+         [
+           defmodule_alias,
+           [do: {:__block__, _, content_ast_list}]
+         ]}
+      ) do
+    process_defmodule(defmodule_options, defmodule_alias, content_ast_list)
   end
 
   def substitute(ast_fragment), do: ast_fragment
 
-  defp process_defmodule(defmodule_options, defmodule_alias, content_ast) do
+  defp process_defmodule(defmodule_options, defmodule_alias, content_ast_list) do
     alias_collector_pid = ContextAliasCollector.get_alias_collector_pid()
 
-    processed_content_ast_list = process_content_ast(content_ast, alias_collector_pid)
+    processed_content_ast_list = process_content_ast(content_ast_list, alias_collector_pid)
 
     {result_context_aliases, _alias_collector_state} =
       Alias.get_result_context_aliases(alias_collector_pid)
