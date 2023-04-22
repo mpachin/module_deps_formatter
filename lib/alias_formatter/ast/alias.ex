@@ -27,7 +27,7 @@ defmodule AliasFormatter.AST.Alias do
              {:__aliases__, [line: 1], name_path},
              [
                {{:__block__, [format: :keyword, line: 1], [:as]},
-                {:__aliases__, [line: 1], alias_as}}
+                {:__aliases__, [line: 1], [alias_as]}}
              ]
            ]}
       end
