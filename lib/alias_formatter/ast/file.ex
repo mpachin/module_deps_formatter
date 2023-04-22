@@ -3,11 +3,11 @@ defmodule AliasFormatter.AST.File do
   alias AliasFormatter.AST.Defmodule
   alias AliasFormatter.ContextAliasCollector
 
-  def substitute({:alias, _, _} = alias_ast),
-    do: process_file([alias_ast])
-
   def substitute({:__block__, [], ast_content_list}),
     do: process_file(ast_content_list)
+
+  def substitute(single_content_ast),
+    do: process_file([single_content_ast])
 
   defp process_file(ast_content_list) do
     alias_collector_pid = ContextAliasCollector.get_alias_collector_pid()
