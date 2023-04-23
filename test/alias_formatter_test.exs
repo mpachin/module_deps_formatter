@@ -40,7 +40,7 @@ defmodule AliasFormatterTest do
     ]
 
     for {test_input, expected_result} <- test_cases do
-      assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+      assert_result_after_format(test_input, expected_result)
     end
   end
 
@@ -73,7 +73,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should preserve as: keyword in aliases" do
@@ -93,7 +93,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should automatically add as: keyword with postfixed alias name if name collision found" do
@@ -113,7 +113,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should substitute short form aliases with full form aliases" do
@@ -131,7 +131,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should substitute short form aliases with full form aliases in complex nestings" do
@@ -149,7 +149,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should remove alias duplicates" do
@@ -166,7 +166,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should remove alias duplicates in complex nestings" do
@@ -188,6 +188,10 @@ defmodule AliasFormatterTest do
     end
     """
 
+    assert_result_after_format(test_input, expected_result)
+  end
+
+  defp assert_result_after_format(test_input, expected_result) do
     assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
   end
 end
