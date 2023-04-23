@@ -9,7 +9,7 @@ defmodule AliasFormatter.AST.DefTest do
     [pid: pid]
   end
 
-  describe "substitute/1" do
+  describe "substitute/2" do
     test "should change function ast if format: :keyword option isn't presented", %{pid: pid} do
       expected_ast = get_def_without_block("first")
 
