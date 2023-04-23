@@ -96,6 +96,26 @@ defmodule AliasFormatterTest do
     assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
   end
 
+  test "should automatically add as: keyword with postfixed alias name if name collision found" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Ccc
+      alias TestModuleExample.Bbb.Ccc
+      alias TestModuleExample.Aaa.{Ccc}
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa.Ccc, as: Ccc_3
+      alias TestModuleExample.Bbb.Ccc, as: Ccc_2
+      alias TestModuleExample.Ccc
+    end
+    """
+
+    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+  end
+
   test "should substitute short form aliases with full form aliases" do
     test_input = """
     defmodule TestModuleExample do
