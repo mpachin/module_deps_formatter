@@ -40,7 +40,7 @@ defmodule AliasFormatterTest do
     ]
 
     for {test_input, expected_result} <- test_cases do
-      assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+      assert_result_after_format(test_input, expected_result)
     end
   end
 
@@ -73,7 +73,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should preserve as: keyword in aliases" do
@@ -93,7 +93,27 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
+  end
+
+  test "should automatically add as: keyword with postfixed alias name if name collision found" do
+    test_input = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Ccc
+      alias TestModuleExample.Bbb.Ccc
+      alias TestModuleExample.Aaa.{Ccc}
+    end
+    """
+
+    expected_result = """
+    defmodule TestModuleExample do
+      alias TestModuleExample.Aaa.Ccc, as: Ccc_3
+      alias TestModuleExample.Bbb.Ccc, as: Ccc_2
+      alias TestModuleExample.Ccc
+    end
+    """
+
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should substitute short form aliases with full form aliases" do
@@ -111,7 +131,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should substitute short form aliases with full form aliases in complex nestings" do
@@ -129,7 +149,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should remove alias duplicates" do
@@ -146,7 +166,7 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
   end
 
   test "should remove alias duplicates in complex nestings" do
@@ -168,6 +188,59 @@ defmodule AliasFormatterTest do
     end
     """
 
-    assert String.trim(expected_result) == AliasFormatter.format(test_input, [])
+    assert_result_after_format(test_input, expected_result)
+  end
+
+  test "should retreive and process aliases from def level to defmodule level" do
+    [
+      {
+        """
+        defmodule TestModuleExample do
+          def fun do
+            alias TestModuleExample.Nested.{Ccc.Ccc, Aaa.Aaa, Bbb.Bbb}
+          end
+        end
+        """,
+        """
+        defmodule TestModuleExample do
+          alias TestModuleExample.Nested.Aaa.Aaa
+          alias TestModuleExample.Nested.Bbb.Bbb
+          alias TestModuleExample.Nested.Ccc.Ccc
+
+          def fun do
+            nil
+          end
+        end
+        """
+      },
+      {
+        """
+        defmodule TestModuleExample do
+          def fun do
+            alias TestModuleExample.Nested.{Ccc.Ccc, Aaa.Aaa, Bbb.Bbb}
+            "first"
+          end
+        end
+        """,
+        """
+        defmodule TestModuleExample do
+          alias TestModuleExample.Nested.Aaa.Aaa
+          alias TestModuleExample.Nested.Bbb.Bbb
+          alias TestModuleExample.Nested.Ccc.Ccc
+
+          def fun do
+            "first"
+          end
+        end
+        """
+      }
+    ]
+    |> Enum.each(fn {test_input, expected_result} ->
+      assert_result_after_format(test_input, expected_result)
+    end)
+  end
+
+  defp assert_result_after_format(test_input, expected_result) do
+    assert AliasFormatter.format(test_input, []) == String.trim(expected_result)
   end
 end
