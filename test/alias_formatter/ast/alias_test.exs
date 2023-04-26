@@ -5,7 +5,7 @@ defmodule AliasFormatter.AST.AliasTest do
   alias AliasFormatter.ContextAliasCollector
 
   setup do
-    pid = ContextAliasCollector.start_link([])
+    pid = ContextAliasCollector.start_link()
     [pid: pid]
   end
 

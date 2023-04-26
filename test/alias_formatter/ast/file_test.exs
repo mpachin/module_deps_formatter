@@ -10,12 +10,12 @@ defmodule AliasFormatter.AST.FileTest do
       assert {:__block__, [], [^processed_alias_ast]} = File.substitute(unprocessed_alias_ast)
     end
 
-    test "should process and hoist aliases in file and defmodule" do
+    test "should process and hoist aliases from defmodule to file context" do
       file_level_name_path = [:One, :Two, :Three]
 
       {file_processed_alias, file_unprocessed_alias} = get_alias_asts(file_level_name_path)
 
-      {defmodule_processed_alias, defmodule_unprocessed_alias} =
+      {_defmodule_processed_alias, defmodule_unprocessed_alias} =
         get_alias_asts(file_level_name_path)
 
       input_ast =
@@ -27,7 +27,7 @@ defmodule AliasFormatter.AST.FileTest do
 
       expected_ast =
         get_def_ast()
-        |> then(&[defmodule_processed_alias, &1])
+        |> then(&[&1])
         |> get_defmodule_ast()
         |> then(&[file_processed_alias, &1])
         |> get_file_ast()

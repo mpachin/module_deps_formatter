@@ -4,7 +4,7 @@ defmodule AliasFormatterTest do
   alias AliasFormatter
 
   test "should sort aliases alphanumerically" do
-    test_cases = [
+    [
       {
         """
         defmodule TestModuleExample do
@@ -38,10 +38,7 @@ defmodule AliasFormatterTest do
         """
       }
     ]
-
-    for {test_input, expected_result} <- test_cases do
-      assert_result_after_format(test_input, expected_result)
-    end
+    |> assert_multiple_results_after_format()
   end
 
   test "should hoist aliases to the beginning of the module" do
@@ -235,9 +232,58 @@ defmodule AliasFormatterTest do
         """
       }
     ]
-    |> Enum.each(fn {test_input, expected_result} ->
+    |> assert_multiple_results_after_format()
+  end
+
+  test "should consider aliases defined in previous context" do
+    [
+      {
+        """
+        alias TestModuleExample.Nested.Aaa
+
+        defmodule TestModuleExample do
+          alias TestModuleExample.Nested.Aaa
+        end
+        """,
+        """
+        alias TestModuleExample.Nested.Aaa
+
+        defmodule TestModuleExample do
+        end
+        """
+      },
+      {
+        """
+        alias TestModuleExample.Nested.Aaa
+
+        defmodule TestModuleExample do
+          alias TestModuleExample.Nested.Aaa
+
+          def test_fun do
+            alias TestModuleExample.Nested.Aaa
+
+            Aaa.test_call()
+          end
+        end
+        """,
+        """
+        alias TestModuleExample.Nested.Aaa
+
+        defmodule TestModuleExample do
+          def test_fun do
+            Aaa.test_call()
+          end
+        end
+        """
+      }
+    ]
+    |> assert_multiple_results_after_format()
+  end
+
+  defp assert_multiple_results_after_format(assertions_list) do
+    for {test_input, expected_result} <- assertions_list do
       assert_result_after_format(test_input, expected_result)
-    end)
+    end
   end
 
   defp assert_result_after_format(test_input, expected_result) do

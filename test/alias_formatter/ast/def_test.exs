@@ -5,7 +5,7 @@ defmodule AliasFormatter.AST.DefTest do
   alias AliasFormatter.ContextAliasCollector
 
   setup do
-    pid = ContextAliasCollector.start_link([])
+    pid = ContextAliasCollector.start_link()
     [pid: pid]
   end
 
@@ -72,7 +72,7 @@ defmodule AliasFormatter.AST.DefTest do
         |> get_def_with_block()
 
       expected_ast =
-        [function_call_ast]
+        function_call_ast
         |> get_def_without_block()
 
       assert expected_ast == Def.substitute(test_ast, pid)
