@@ -98,12 +98,12 @@ defmodule AliasFormatter.AST.Def do
     end
   end
 
-  defp unwrap_ast([expr]) when not is_list(expr) and not is_tuple(expr),
+  defp unwrap_ast([{:__block__, _, content_ast}]), do: unwrap_ast(content_ast)
+
+  defp unwrap_ast([expr]),
     do: expr
 
   defp unwrap_ast([]), do: nil
-
-  defp unwrap_ast([{:__block__, _, content_ast}]), do: unwrap_ast(content_ast)
 
   defp unwrap_ast(ast_block), do: ast_block
 end
