@@ -22,7 +22,7 @@ defmodule AliasFormatter.AST.DefmoduleTest do
       assert ^expected_ast =
                do_block_ast_list_without_aliases
                |> get_defmodule_block_list_ast()
-               |> Defmodule.substitute()
+               |> substitute()
     end
 
     test "should keep defmodule ast untouched if it has correct structure" do
@@ -30,7 +30,7 @@ defmodule AliasFormatter.AST.DefmoduleTest do
         get_do_block_ast_list_without_aliases()
         |> get_defmodule_ast_formatted_right()
 
-      assert ^expected_ast = Defmodule.substitute(expected_ast)
+      assert ^expected_ast = substitute(expected_ast)
     end
 
     test "should hoist alias from def to defmodule level", %{
@@ -44,7 +44,7 @@ defmodule AliasFormatter.AST.DefmoduleTest do
                [alias_ast]
                |> get_do_block_ast_list_with_alias()
                |> get_defmodule_ast_formatted_right()
-               |> Defmodule.substitute()
+               |> substitute()
     end
 
     test "should retrieve alias when it is the only content in do: {:__block__, ...} format", %{
@@ -54,7 +54,7 @@ defmodule AliasFormatter.AST.DefmoduleTest do
 
       expected_ast = [alias_ast] |> get_defmodule_ast_formatted_right()
 
-      assert expected_ast == original_ast |> Defmodule.substitute()
+      assert expected_ast == original_ast |> substitute()
     end
 
     test "should retrieve alias when it is the only content in {:__block__, _, [:do]} format", %{
@@ -64,8 +64,12 @@ defmodule AliasFormatter.AST.DefmoduleTest do
 
       expected_ast = [alias_ast] |> get_defmodule_ast_formatted_right()
 
-      assert expected_ast == original_ast |> Defmodule.substitute()
+      assert expected_ast == original_ast |> substitute()
     end
+  end
+
+  defp substitute(ast, previous_context_aliases \\ {%{}, %{}, %{}}) do
+    Defmodule.substitute(ast, previous_context_aliases)
   end
 
   defp get_defmodule_block_singular_content_ast(do_block_ast) do
