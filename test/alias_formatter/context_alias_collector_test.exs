@@ -5,7 +5,7 @@ defmodule AliasFormatter.ContextAliasCollectorTest do
   alias GenServer
 
   setup do
-    pid = ContextAliasCollector.start_link([])
+    pid = ContextAliasCollector.start_link()
     [pid: pid]
   end
 
@@ -68,6 +68,45 @@ defmodule AliasFormatter.ContextAliasCollectorTest do
               ], ^expected_state} = ContextAliasCollector.get_result_aliases(pid)
 
       assert not Process.alive?(pid)
+    end
+
+    test "should not include aliases from previous context but should preserve them in returned state" do
+      {prev_test_name_path, prev_test_alias_as} = prev_context_alias_data = {[:Aaa, :Bbb], :Bbb}
+
+      {test_name_path, test_alias_as} = test_alias_data = {[:Aaa, :Bbb, :Ccc], :CccAliasAs}
+
+      prev_paths_to_leaf = %{prev_test_name_path => prev_test_alias_as}
+      prev_leaf_to_path = %{prev_test_alias_as => prev_test_name_path}
+      prev_leaf_to_increment = %{prev_test_alias_as => 1}
+
+      previous_context_state = {
+        prev_paths_to_leaf,
+        prev_leaf_to_path,
+        prev_leaf_to_increment
+      }
+
+      expected_state = {
+        prev_paths_to_leaf |> Map.put(test_name_path, test_alias_as),
+        prev_leaf_to_path |> Map.put(test_alias_as, test_name_path),
+        prev_leaf_to_increment |> Map.put(test_alias_as, 1)
+      }
+
+      expected_returned_result = {[test_alias_data], expected_state}
+
+      [
+        [test_alias_data],
+        [prev_context_alias_data, test_alias_data]
+      ]
+      |> Enum.each(fn aliases_to_add ->
+        pid = ContextAliasCollector.start_link(previous_context_state)
+
+        aliases_to_add
+        |> Enum.each(fn test_alias_data ->
+          ContextAliasCollector.add_alias(pid, test_alias_data)
+        end)
+
+        assert expected_returned_result == ContextAliasCollector.get_result_aliases(pid)
+      end)
     end
   end
 end
