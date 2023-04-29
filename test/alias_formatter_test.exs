@@ -275,6 +275,52 @@ defmodule AliasFormatterTest do
           end
         end
         """
+      },
+      {
+        """
+        defmodule TestModuleExample do
+          defmodule NestedModule do
+            def test_fun do
+              alias Aaa
+
+              Aaa.test_call()
+            end
+
+            def test_fun_2 do
+              alias Bbb
+
+              Bbb.test_call()
+            end
+          end
+
+          def test_fun do
+            alias Aaa
+
+            Aaa.test_call()
+          end
+        end
+        """,
+        """
+        defmodule TestModuleExample do
+          alias Aaa
+
+          defmodule NestedModule do
+            alias Bbb
+
+            def test_fun do
+              Aaa.test_call()
+            end
+
+            def test_fun_2 do
+              Bbb.test_call()
+            end
+          end
+
+          def test_fun do
+            Aaa.test_call()
+          end
+        end
+        """
       }
     ]
     |> assert_multiple_results_after_format()

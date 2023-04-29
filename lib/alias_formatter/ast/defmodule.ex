@@ -71,10 +71,13 @@ defmodule AliasFormatter.AST.Defmodule do
        ) do
     alias_collector_pid = ContextAliasCollector.start_link(previous_context_aliases)
 
-    processed_content_ast_list = process_content_ast(content_ast_list, alias_collector_pid)
+    preprocessed_content_ast_list = process_content_ast(content_ast_list, alias_collector_pid)
 
-    {result_context_aliases, _alias_collector_state} =
+    {result_context_aliases, alias_collector_state} =
       Alias.get_result_context_aliases(alias_collector_pid)
+
+    processed_content_ast_list =
+      process_nested_defmodules(preprocessed_content_ast_list, alias_collector_state)
 
     processed_ast = result_context_aliases ++ processed_content_ast_list
 
@@ -90,9 +93,14 @@ defmodule AliasFormatter.AST.Defmodule do
     |> Alias.retrieve_aliases_from_ast(alias_collector_pid)
   end
 
-  defp process_content_ast(content_ast, alias_collector_pid) do
-    content_ast
+  defp process_content_ast(content_ast_list, alias_collector_pid) do
+    content_ast_list
     |> Alias.retrieve_aliases_from_ast(alias_collector_pid)
     |> Enum.map(&Def.substitute(&1, alias_collector_pid))
+  end
+
+  defp process_nested_defmodules(content_ast_list, alias_collector_state) do
+    content_ast_list
+    |> Enum.map(&substitute(&1, alias_collector_state))
   end
 end
