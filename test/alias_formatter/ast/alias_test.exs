@@ -37,7 +37,9 @@ defmodule AliasFormatter.AST.AliasTest do
   end
 
   describe "get_result_context_aliases/1" do
-    test "should return aliases ast list with preserved as: keyword", %{pid: pid} do
+    test "should return aliases ast list with preserved as: keyword and updated line numbers", %{
+      pid: pid
+    } do
       first_name_path = [:Aaa, :Bbb]
       first_alias_as = List.last(first_name_path)
 
@@ -64,12 +66,12 @@ defmodule AliasFormatter.AST.AliasTest do
 
       assert {[
                 {:alias, [line: 1], [{:__aliases__, [line: 1], ^first_name_path}]},
-                {:alias, [line: 1],
+                {:alias, [line: 2],
                  [
-                   {:__aliases__, [line: 1], ^second_name_path},
+                   {:__aliases__, [line: 2], ^second_name_path},
                    [
-                     {{:__block__, [format: :keyword, line: 1], [:as]},
-                      {:__aliases__, [line: 1], [^second_alias_as]}}
+                     {{:__block__, [format: :keyword, line: 2], [:as]},
+                      {:__aliases__, [line: 2], [^second_alias_as]}}
                    ]
                  ]}
               ], ^expected_state} = Alias.get_result_context_aliases(pid)
