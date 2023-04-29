@@ -13,26 +13,29 @@ defmodule AliasFormatter.AST.Alias do
   def get_result_context_aliases(alias_collector_pid) do
     {result_aliases, state} = ContextAliasCollector.get_result_aliases(alias_collector_pid)
 
-    result_aliases
-    |> Enum.map(fn {name_path, alias_as} ->
-      name_path
-      |> List.last()
-      |> case do
-        ^alias_as ->
-          {:alias, [line: 1], [{:__aliases__, [line: 1], name_path}]}
+    {processed_result_aliases, _} =
+      result_aliases
+      |> Enum.map_reduce(1, fn {name_path, alias_as}, line ->
+        name_path
+        |> List.last()
+        |> case do
+          ^alias_as ->
+            {:alias, [line: line], [{:__aliases__, [line: line], name_path}]}
 
-        _ ->
-          {:alias, [line: 1],
-           [
-             {:__aliases__, [line: 1], name_path},
+          _ ->
+            {:alias, [line: line],
              [
-               {{:__block__, [format: :keyword, line: 1], [:as]},
-                {:__aliases__, [line: 1], [alias_as]}}
-             ]
-           ]}
-      end
-    end)
-    |> then(&{&1, state})
+               {:__aliases__, [line: line], name_path},
+               [
+                 {{:__block__, [format: :keyword, line: line], [:as]},
+                  {:__aliases__, [line: line], [alias_as]}}
+               ]
+             ]}
+        end
+        |> then(&{&1, line + 1})
+      end)
+
+    {processed_result_aliases, state}
   end
 
   defp substitute(
